@@ -15,22 +15,22 @@
     "execute": {
         "url": "https://geminicustom.netlify.app/activity/execute",
         "verb": "POST",
-        "body": "",
-        "timeout": 10000,
-        "retryCount": 3,
-        "retryDelay": 1000
+        "useJwt": true
     },
     "save": {
         "url": "https://geminicustom.netlify.app/activity/save",
-        "verb": "POST"
+        "verb": "POST",
+        "useJwt": true
     },
     "publish": {
         "url": "https://geminicustom.netlify.app/activity/publish",
-        "verb": "POST"
+        "verb": "POST",
+        "useJwt": true
     },
     "validate": {
         "url": "https://geminicustom.netlify.app/activity/validate",
-        "verb": "POST"
+        "verb": "POST",
+        "useJwt": true
     },
     "userInterfaces": {
         "configModal": {
