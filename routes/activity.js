@@ -1,97 +1,118 @@
 const express = require('express');
 const router = express.Router();
+const fetch = require('node-fetch');
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// Placeholder para la función que llama a la API de Gemini
+// --- CONFIGURACIÓN ---
+// Carga las claves secretas desde el archivo .env
+const { GEMINI_API_KEY, SFMC_CLIENT_ID, SFMC_CLIENT_SECRET, SFMC_SUBDOMAIN } = process.env;
+
+// Construye las URLs de la API de Marketing Cloud
+const SFMC_AUTH_URL = `https://${SFMC_SUBDOMAIN}.auth.marketingcloudapis.com/v2/token`;
+const SFMC_REST_URL = `https://${SFMC_SUBDOMAIN}.rest.marketingcloudapis.com`;
+
+// Inicializa el cliente de Gemini AI
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+let sfmcAuthToken = null;
+
+// --- FUNCIONES AUXILIARES ---
+
+/**
+ * Obtiene un token de autenticación de SFMC.
+ */
+async function getSfmAuthToken() {
+    if (sfmcAuthToken) return sfmcAuthToken; // Reutiliza el token si ya existe
+    
+    console.log("Requesting new SFMC Auth Token...");
+    const response = await fetch(SFMC_AUTH_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            grant_type: 'client_credentials',
+            client_id: SFMC_CLIENT_ID,
+            client_secret: SFMC_CLIENT_SECRET,
+        }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(`SFMC Auth failed: ${data.error_description}`);
+    
+    sfmcAuthToken = data.access_token;
+    console.log("SFMC Auth Token obtained successfully.");
+    return sfmcAuthToken;
+}
+
+/**
+ * Llama a la API de Gemini para generar contenido.
+ */
 async function callGeminiAPI(prompt) {
-    console.log("Calling Gemini API with prompt:", prompt);
-    // --- INICIO DE LA LÓGICA DE LA API DE GEMINI ---
-    // Aquí iría el código para hacer una petición a la API de Google Generative AI
-    // Ejemplo:
-    // const { GoogleGenerativeAI } = require("@google/generative-ai");
-    // const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // const model = genAI.getGenerativeModel({ model: "gemini-pro"});
-    // const result = await model.generateContent(prompt);
-    // const response = await result.response;
-    // const text = response.text();
-    // return text;
-    // --- FIN DE LA LÓGICA DE LA API DE GEMINI ---
-
-    // Devolvemos un cuerpo de correo de ejemplo para pruebas
-    return `
-        <h1>Hola!</h1>
-        <p>Este es un correo de prueba generado basado en el prompt:</p>
-        <p><em>${prompt}</em></p>
-        <p>¡Esperamos que te guste!</p>
-    `;
+    console.log("Calling Gemini API...");
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
 }
 
-// Placeholder para la función que envía el correo
-async function sendEmail(to, subject, htmlBody) {
-    console.log(`Sending email to: ${to}`);
-    console.log(`Subject: ${subject}`);
-    // --- INICIO DE LA LÓGICA DE ENVÍO DE CORREO ---
-    // Aquí usarías un servicio como SendGrid, Amazon SES, o la API de SFMC
-    // para enviar el correo. Por seguridad y trazabilidad, usar la API de SFMC
-    // para envíos transaccionales es una excelente opción.
-    // --- FIN DE LA LÓGICA DE ENVÍO DE CORREO ---
-    console.log("Email sent successfully (simulation).");
-    return true;
+/**
+ * Envía el correo usando la API Transaccional de Marketing Cloud.
+ */
+async function sendEmailViaSfm(contactKey, toAddress, subject, htmlBody) {
+    const token = await getSfmAuthToken();
+    const sendDefinitionKey = 'gemini-custom-activity-send'; // Clave de tu Definición de Envío Transaccional
+    
+    const payload = {
+        definitionKey: sendDefinitionKey,
+        recipient: {
+            contactKey: contactKey,
+            to: toAddress,
+            attributes: { HTMLBody: htmlBody, Subject: subject }
+        }
+    };
+
+    console.log(`Sending email to ${toAddress} via SFMC...`);
+    const response = await fetch(`${SFMC_REST_URL}/messaging/v1/email/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+    });
+    
+    if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Failed to send email via SFMC: ${errorData.message}`);
+    }
+    
+    const responseData = await response.json();
+    console.log("Email successfully queued in SFMC. Request ID:", responseData.requestId);
 }
 
 
-// Endpoint de EJECUCIÓN: Se llama para cada contacto en el Journey
+// --- ENDPOINTS DE LA ACTIVIDAD ---
+
+// Endpoint de EJECUCIÓN: Se activa para cada contacto.
 router.post('/execute', async (req, res) => {
-    console.log('Executing activity for contact:', req.body);
-
-    // Los datos del contacto vienen en 'inArguments'
-    const args = req.body.inArguments[0];
-    
-    // Los datos de configuración de la UI vienen en 'activityInstance.metaData'
-    const activityData = req.body;
-    const subjectTemplate = activityData.metaData.subject;
-    const promptTemplate = activityData.metaData.promptTemplate;
-    
-    // 1. Personalizar el prompt y el asunto con los datos del contacto
-    let prompt = promptTemplate
-        .replace(/{{firstName}}/g, args.firstName)
-        .replace(/{{city}}/g, args.city)
-        .replace(/{{interest}}/g, args.interest);
-
-    let subject = subjectTemplate.replace(/{{firstName}}/g, args.firstName);
-
     try {
-        // 2. Llamar a la API de Gemini para generar el cuerpo del correo
+        const args = req.body.inArguments[0];
+        const { subject: subjectTemplate, promptTemplate } = req.body.metaData;
+
+        const prompt = promptTemplate
+            .replace(/{{firstName}}/g, args.firstName || 'cliente')
+            .replace(/{{city}}/g, args.city || 'tu ciudad')
+            .replace(/{{interest}}/g, args.interest || 'tus intereses');
+
+        const subject = subjectTemplate.replace(/{{firstName}}/g, args.firstName || 'Hola');
+
         const emailBody = await callGeminiAPI(prompt);
-
-        // 3. Enviar el correo personalizado
-        await sendEmail(args.emailAddress, subject, emailBody);
-
-        // 4. Devolver éxito a Marketing Cloud
+        await sendEmailViaSfm(args.contactKey, args.emailAddress, subject, emailBody);
+        
         res.status(200).json({ success: true });
-
     } catch (error) {
-        console.error("Error during execution:", error);
+        console.error("Execution failed:", error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// Endpoint de GUARDADO: Se llama cuando el usuario guarda la configuración
-router.post('/save', (req, res) => {
-    console.log('Saving activity configuration:', req.body);
-    res.status(200).json({ success: true });
-});
-
-// Endpoint de PUBLICACIÓN: Se llama cuando el Journey se activa
-router.post('/publish', (req, res) => {
-    console.log('Publishing activity:', req.body);
-    res.status(200).json({ success: true });
-});
-
-// Endpoint de VALIDACIÓN: Se llama para comprobar que la configuración es correcta antes de publicar
-router.post('/validate', (req, res) => {
-    console.log('Validating activity:', req.body);
-    // Aquí podrías añadir lógica para verificar que el prompt y el asunto no están vacíos
-    res.status(200).json({ success: true });
-});
+// Endpoints del ciclo de vida (Guardar, Publicar, Validar)
+router.post('/save', (req, res) => res.status(200).json({ success: true }));
+router.post('/publish', (req, res) => res.status(200).json({ success: true }));
+router.post('/validate', (req, res) => res.status(200).json({ success: true }));
 
 module.exports = router;
