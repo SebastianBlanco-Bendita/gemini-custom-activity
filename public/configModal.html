@@ -1,1 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gemini Email Configuration</title>
+    <style>
+        /* Agrega estilos básicos para que se vea bien */
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        label { display: block; margin-top: 15px; }
+        input, textarea { width: 95%; padding: 8px; margin-top: 5px; }
+        textarea { height: 150px; }
+    </style>
+</head>
+<body>
+    <h1>Configuración del Correo con Gemini</h1>
+    
+    <label for="subject">Asunto del Correo:</label>
+    <input type="text" id="subject" placeholder="Ej: Una oferta especial para ti, {{firstName}}">
 
+    <label for="prompt">Plantilla de Prompt para Gemini:</label>
+    <textarea id="prompt" placeholder="Describe la tarea para la IA. Usa placeholders como {{firstName}}, {{city}}, e {{interest}}."></textarea>
+    <p>Placeholders disponibles: <code>{{firstName}}</code>, <code>{{city}}</code>, <code>{{interest}}</code></p>
+
+    <script src="js/postmonger.js"></script> 
+    <script src="script.js"></script>
+</body>
+</html>
