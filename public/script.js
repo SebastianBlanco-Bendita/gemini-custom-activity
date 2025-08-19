@@ -1,48 +1,29 @@
 'use strict';
-
 const connection = new Postmonger.Session();
 let payload = {};
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     connection.on('initActivity', initialize);
     connection.on('clickedNext', save);
     connection.trigger('ready');
 });
 
 function initialize(data) {
-    if (data) {
-        payload = data;
-    }
-
-    const subject = getMetaDataValue('subject', '');
-    const promptTemplate = getMetaDataValue('promptTemplate', '');
-
-    document.getElementById('subject').value = subject;
-    document.getElementById('prompt').value = promptTemplate;
-
+    if (data) payload = data;
+    document.getElementById('subject').value = getMetaData('subject', '');
+    document.getElementById('prompt').value = getMetaData('promptTemplate', '');
     connection.trigger('updateButton', { button: 'next', text: 'Done', visible: true });
 }
 
 function save() {
-    const subject = document.getElementById('subject').value.trim();
-    const promptTemplate = document.getElementById('prompt').value.trim();
-
-    if (!subject || !promptTemplate) {
-        alert('Por favor, completa el asunto y la plantilla del prompt.');
-        connection.trigger('ready'); // Vuelve a habilitar el botón "Done"
-        return;
-    }
-
     payload['metaData'] = {
-        subject: subject,
-        promptTemplate: promptTemplate
+        subject: document.getElementById('subject').value,
+        promptTemplate: document.getElementById('prompt').value
     };
-    
     payload.metaData.isConfigured = true;
-
     connection.trigger('updateActivity', payload);
 }
 
-function getMetaDataValue(key, defaultValue) {
-    return payload.metaData && payload.metaData[key] ? payload.metaData[key] : defaultValue;
+function getMetaData(key, def) {
+    return payload.metaData && payload.metaData[key] ? payload.metaData[key] : def;
 }
