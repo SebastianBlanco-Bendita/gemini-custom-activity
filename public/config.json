@@ -13,7 +13,7 @@
     "icon": "images/icon.svg",
     "category": "Messages",
     "execute": {
-        "url": "https://<TU_URL_PUBLICA>/activity/execute",
+        "url": "https://geminicustom.netlify.app/activity/execute",
         "verb": "POST",
         "body": "",
         "timeout": 10000,
@@ -21,15 +21,15 @@
         "retryDelay": 1000
     },
     "save": {
-        "url": "https://<TU_URL_PUBLICA>/activity/save",
+        "url": "https://geminicustom.netlify.app/activity/save",
         "verb": "POST"
     },
     "publish": {
-        "url": "https://<TU_URL_PUBLICA>/activity/publish",
+        "url": "https://geminicustom.netlify.app/activity/publish",
         "verb": "POST"
     },
     "validate": {
-        "url": "https://<TU_URL_PUBLICA>/activity/validate",
+        "url": "https://geminicustom.netlify.app/activity/validate",
         "verb": "POST"
     },
     "userInterfaces": {
@@ -37,7 +37,7 @@
             "height": 500,
             "width": 800,
             "fullscreen": false,
-            "url": "https://<TU_URL_PUBLICA>/configModal.html"
+            "url": "https://geminicustom.netlify.app/configModal.html"
         }
     },
     "arguments": {
