@@ -1,43 +1,37 @@
 {
-    "key": "GEMINI-EMAIL-ACTIVITY-KEY",
-    "name": "Gemini Personalized Email",
-    "description": "Uses Gemini AI to generate and send a personalized email based on contact interests.",
+    "key": "GEMINI-EMAIL-ACTIVITY-KEY-FINAL",
+    "name": "IA: Email Personalizado (Gemini)",
+    "description": "Crea y envía un email único para cada contacto usando IA.",
     "type": "REST",
     "lang": {
         "en-US": {
-            "name": "Gemini Personalized Email",
-            "description": "Uses Gemini AI to generate and send a personalized email based on contact interests."
+            "name": "AI: Personalized Email (Gemini)",
+            "description": "Creates and sends a unique email for each contact using AI."
         }
     },
     "workflowApiVersion": "1.1",
     "icon": "images/icon.svg",
     "category": "Messages",
     "execute": {
-        "url": "https://geminicustom.netlify.app/activity/execute",
-        "verb": "POST",
-        "useJwt": true
+        "url": "https://TU-APP.onrender.com/activity/execute",
+        "verb": "POST", "useJwt": true
     },
     "save": {
-        "url": "https://geminicustom.netlify.app/activity/save",
-        "verb": "POST",
-        "useJwt": true
+        "url": "https://TU-APP.onrender.com/activity/save",
+        "verb": "POST", "useJwt": true
     },
     "publish": {
-        "url": "https://geminicustom.netlify.app/activity/publish",
-        "verb": "POST",
-        "useJwt": true
+        "url": "https://TU-APP.onrender.com/activity/publish",
+        "verb": "POST", "useJwt": true
     },
     "validate": {
-        "url": "https://geminicustom.netlify.app/activity/validate",
-        "verb": "POST",
-        "useJwt": true
+        "url": "https://TU-APP.onrender.com/activity/validate",
+        "verb": "POST", "useJwt": true
     },
     "userInterfaces": {
         "configModal": {
-            "height": 500,
-            "width": 800,
-            "fullscreen": false,
-            "url": "https://geminicustom.netlify.app/configModal.html"
+            "height": 500, "width": 800, "fullscreen": false,
+            "url": "https://TU-APP.onrender.com/configModal.html"
         }
     },
     "arguments": {
