@@ -20,6 +20,6 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
-    console.log(`Custom Activity endpoint: https://<TU_URL_PUBLICA>/activity`);
-    console.log(`UI endpoint: https://<TU_URL_PUBLICA>/configModal.html`);
+    console.log(`Custom Activity endpoint: https://geminicustom.netlify.app/activity`);
+    console.log(`UI endpoint: https://geminicustom.netlify.app/configModal.html`);
 });
