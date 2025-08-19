@@ -1,1 +1,69 @@
-
+{
+    "key": "GEMINI-EMAIL-ACTIVITY-KEY",
+    "name": "Gemini Personalized Email",
+    "description": "Uses Gemini AI to generate and send a personalized email based on contact interests.",
+    "type": "REST",
+    "lang": {
+        "en-US": {
+            "name": "Gemini Personalized Email",
+            "description": "Uses Gemini AI to generate and send a personalized email based on contact interests."
+        }
+    },
+    "workflowApiVersion": "1.1",
+    "icon": "images/icon.svg",
+    "category": "Messages",
+    "execute": {
+        "url": "https://<TU_URL_PUBLICA>/activity/execute",
+        "verb": "POST",
+        "body": "",
+        "timeout": 10000,
+        "retryCount": 3,
+        "retryDelay": 1000
+    },
+    "save": {
+        "url": "https://<TU_URL_PUBLICA>/activity/save",
+        "verb": "POST"
+    },
+    "publish": {
+        "url": "https://<TU_URL_PUBLICA>/activity/publish",
+        "verb": "POST"
+    },
+    "validate": {
+        "url": "https://<TU_URL_PUBLICA>/activity/validate",
+        "verb": "POST"
+    },
+    "userInterfaces": {
+        "configModal": {
+            "height": 500,
+            "width": 800,
+            "fullscreen": false,
+            "url": "https://<TU_URL_PUBLICA>/configModal.html"
+        }
+    },
+    "arguments": {
+        "execute": {
+            "inArguments": [
+                { "contactKey": "{{Contact.Key}}" },
+                { "emailAddress": "{{Contact.Attribute.TestCustomActivity.Mail}}" },
+                { "firstName": "{{Contact.Attribute.TestCustomActivity.FirstName}}" },
+                { "city": "{{Contact.Attribute.TestCustomActivity.City}}" },
+                { "interest": "{{Contact.Attribute.TestCustomActivity.InterestCategory}}" }
+            ],
+            "outArguments": []
+        }
+    },
+    "schema": {
+        "arguments": {
+            "execute": {
+                "inArguments": [
+                    { "contactKey": { "dataType": "Text", "isNullable": false, "direction": "in" }},
+                    { "emailAddress": { "dataType": "Email", "isNullable": false, "direction": "in" }},
+                    { "firstName": { "dataType": "Text", "isNullable": true, "direction": "in" }},
+                    { "city": { "dataType": "Text", "isNullable": true, "direction": "in" }},
+                    { "interest": { "dataType": "Text", "isNullable": true, "direction": "in" }}
+                ],
+                "outArguments": []
+            }
+        }
+    }
+}
